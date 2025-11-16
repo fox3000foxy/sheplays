@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import Footer from "../components/Footer";
 import NavBar from "../components/NavBar";
@@ -35,7 +36,7 @@ export default function Home() {
           {/* Image alignée en bas */}
           <div className="relative animate-in delay-3 flex justify-center">
             <img
-              src="/images/hero.png"
+              src="/images/hero-new.png"
               alt="Joueuse ShePlays"
               style={{ height: 700, width: 700, minWidth: 700 }}
 

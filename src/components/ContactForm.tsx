@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -92,7 +93,7 @@ export default function ContactForm() {
         </button>
 
         {status === "success" && <div className="text-sm text-green-400">Message envoyé — merci !</div>}
-        {status === "error" && <div className="text-sm text-red-400">Échec de l'envoi.</div>}
+        {status === "error" && <div className="text-sm text-red-400">Échec de l&apos;envoi.</div>}
       </div>
     </form>
   );

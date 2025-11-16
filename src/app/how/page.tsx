@@ -8,10 +8,10 @@ export default function HowPage() {
 
       <main className="pt-20 px-6">
         <section className="py-32 max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold mb-20">Comment ça marche</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-20 animate-in">Comment ça marche</h2>
 
           <div className="grid md:grid-cols-3 gap-12">
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in delay-1">
               <div className="w-12 h-12 bg-surface rounded flex items-center justify-center font-bold text-xl">1</div>
               <h3 className="text-2xl font-bold">Choisis une joueuse</h3>
               <p className="text-muted leading-relaxed">
@@ -20,7 +20,7 @@ export default function HowPage() {
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in delay-2">
               <div className="w-12 h-12 bg-surface rounded flex items-center justify-center font-bold text-xl">2</div>
               <h3 className="text-2xl font-bold">Réserve ta session</h3>
               <p className="text-muted leading-relaxed">
@@ -29,7 +29,7 @@ export default function HowPage() {
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 animate-in delay-3">
               <div className="w-12 h-12 bg-surface rounded flex items-center justify-center font-bold text-xl">3</div>
               <h3 className="text-2xl font-bold">Joue et déconnecte</h3>
               <p className="text-muted leading-relaxed">
