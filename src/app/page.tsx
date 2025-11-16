@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -50,13 +49,12 @@ export default function Home() {
 
           {/* Image alignée en bas */}
           <div className="relative animate-in delay-3 flex justify-center">
-            <Image
-              src="/images/wmremove-transformed-Photoroom.png"
+            <img
+              src="/images/hero.png"
               alt="Joueuse ShePlays"
-              width={512}
-              height={700}
+              style={{height: 700, width: 700, minWidth: 700}}
+
               className="w-full max-w-lg drop-shadow-2xl select-none pointer-events-none"
-              priority
             />
           </div>
         </div>
