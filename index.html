@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>ShePlays — Gaming without the bullshit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: "#0a0a0a",
+            surface: "#111111",
+            border: "#1a1a1a",
+            muted: "#6b6b6b",
+            cyan: "#00ffff",
+            pink: "#ff006e",
+          },
+          fontFamily: {
+            sans: ["Inter", "system-ui", "sans-serif"],
+          },
+        }
+      }
+    };
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      scroll-behavior: smooth;
+    }
+    
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      font-feature-settings: 'cv11', 'ss01';
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #00ffff 0%, #ff006e 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .hover-lift {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .hover-lift:hover {
+      transform: translateY(-2px);
+    }
+    
+    .border-gradient {
+      position: relative;
+      background: #111111;
+      overflow: hidden;
+    }
+    
+    .border-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, #00ffff, #ff006e);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .animate-in {
+      animation: fade-in 0.6s ease-out forwards;
+    }
+    
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+  </style>
+</head>
+
+<body class="bg-dark text-white font-sans">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full z-50 border-b border-border bg-dark/80 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <img src="https://sheplays.wtf/logo.svg" alt="ShePlays" class="h-12">
+      </div>
+      
+      <div class="hidden md:flex items-center gap-8 text-sm text-muted">
+        <a href="#how" class="hover:text-white transition">Fonctionnement</a>
+        <a href="#games" class="hover:text-white transition">Jeux</a>
+        <a href="#pricing" class="hover:text-white transition">Tarifs</a>
+      </div>
+      
+      <a href="#start" class="px-5 py-2 bg-white text-dark text-sm font-medium rounded hover:bg-white/90 transition hover-lift">
+        Rejoindre
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+<section class="pt-20 pb-0 px-6 relative">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-end">
+
+   <div class="max-w-3xl space-y-8 pb-10 md:pb-16">
+
+      <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-none animate-in">
+        Trouve ta coéquipière.<br>
+        <span class="gradient-text">Joue mieux. Rage moins. Kiffe plus.</span>
+      </h1>
+
+      <p class="text-xl text-muted max-w-2xl leading-relaxed animate-in delay-1">
+        ShePlays connecte des joueuses vérifiées pour des sessions courtes et qualitatives.
+        Pas de drague. Pas de toxicité. Juste du gaming.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 animate-in delay-2">
+        <a href="#start" 
+           class="px-8 py-4 bg-white text-dark font-semibold rounded hover:bg-white/90 transition hover-lift text-center">
+          Découvrir les joueuses
+        </a>
+
+      <a href="#how"
+   class="px-8 py-4 border border-border hover:border-muted font-semibold rounded transition hover-lift text-center">
+  Comment ça marche
+</a>
+
+      </div>
+    </div>
+
+    <!-- Image alignée en bas -->
+    <div class="relative animate-in delay-3 flex justify-center">
+      <img 
+        src="wmremove-transformed-Photoroom.png" 
+        alt="Joueuse ShePlays" 
+        class="w-full max-w-lg drop-shadow-2xl select-none pointer-events-none">
+    </div>
+
+  </div>
+</section>
+
+
+  <!-- STATS -->
+<section class="pt-2 pb-0 px-6 border-t border-border">
+
+  <div class="max-w-6xl mx-auto">
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 animate-in delay-3 text-center md:text-left">
+
+      <div class="flex flex-col justify-center min-h-[120px]">
+        <div class="text-3xl font-bold mb-2">15–60 min</div>
+        <div class="text-muted">Sessions courtes et flexibles</div>
+      </div>
+
+      <div class="flex flex-col justify-center min-h-[120px]">
+        <div class="text-3xl font-bold mb-2">100%</div>
+        <div class="text-muted">Profils vérifiés manuellement</div>
+      </div>
+
+      <div class="flex flex-col justify-center min-h-[120px]">
+        <div class="text-3xl font-bold mb-2">4 jeux</div>
+        <div class="text-muted">Valorant, Fortnite, CoD, Genshin</div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="py-32 px-6 border-t border-border">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold mb-20">Comment ça marche</h2>
+      
+      <div class="grid md:grid-cols-3 gap-12">
+        <div class="space-y-4">
+          <div class="w-12 h-12 bg-surface rounded flex items-center justify-center font-bold text-xl">1</div>
+          <h3 class="text-2xl font-bold">Choisis une joueuse</h3>
+          <p class="text-muted leading-relaxed">
+            Parcours les profils disponibles. Niveau, jeu, style de jeu, langue. 
+            Tout est transparent.
+          </p>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="w-12 h-12 bg-surface rounded flex items-center justify-center font-bold text-xl">2</div>
+          <h3 class="text-2xl font-bold">Réserve ta session</h3>
+          <p class="text-muted leading-relaxed">
+            15, 30 ou 60 minutes. Paiement sécurisé Stripe. 
+            Confirmation instantanée sur Discord.
+          </p>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="w-12 h-12 bg-surface rounded flex items-center justify-center font-bold text-xl">3</div>
+          <h3 class="text-2xl font-bold">Joue et déconnecte</h3>
+          <p class="text-muted leading-relaxed">
+            Rejoins le vocal privé. Joue ta session. Terminé. 
+            Pas de follow-up, pas de pression.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES GRID -->
+  <section id="games" class="py-32 px-6 border-t border-border">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex items-end justify-between mb-12 gap-4">
+        <h2 class="text-4xl md:text-5xl font-bold">Jeux disponibles</h2>
+        <span class="text-muted text-sm md:text-base">Mis à jour mensuellement</span>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-8 bg-surface rounded-lg hover:bg-surface/80 transition cursor-pointer hover-lift">
+          <h3 class="text-2xl font-bold mb-2">Valorant</h3>
+          <p class="text-muted mb-4">Ranked • Tryhard • Chill</p>
+          <div class="text-sm text-muted">12 joueuses disponibles</div>
+        </div>
+        
+        <div class="p-8 bg-surface rounded-lg hover:bg-surface/80 transition cursor-pointer hover-lift">
+          <h3 class="text-2xl font-bold mb-2">Fortnite</h3>
+          <p class="text-muted mb-4">Battle Royale • Creative • Ranked</p>
+          <div class="text-sm text-muted">8 joueuses disponibles</div>
+        </div>
+        
+        <div class="p-8 bg-surface rounded-lg hover:bg-surface/80 transition cursor-pointer hover-lift">
+          <h3 class="text-2xl font-bold mb-2">Call of Duty</h3>
+          <p class="text-muted mb-4">Multiplayer • Warzone</p>
+          <div class="text-sm text-muted">6 joueuses disponibles</div>
+        </div>
+        
+        <div class="p-8 bg-surface rounded-lg hover:bg-surface/80 transition cursor-pointer hover-lift">
+          <h3 class="text-2xl font-bold mb-2">Genshin Impact</h3>
+          <p class="text-muted mb-4">Co-op • Exploration</p>
+          <div class="text-sm text-muted">4 joueuses disponibles</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAFETY -->
+  <section class="py-32 px-6 border-t border-border">
+    <div class="max-w-4xl mx-auto text-center space-y-8">
+      <h2 class="text-4xl md:text-5xl font-bold">Sécurité et respect</h2>
+      
+      <p class="text-xl text-muted leading-relaxed max-w-2xl mx-auto">
+        Chaque profil est vérifié manuellement. Les vocaux sont enregistrés. 
+        Le harcèlement est banni définitivement. ShePlays est un espace safe, point final.
+      </p>
+      
+      <div class="grid md:grid-cols-3 gap-8 pt-12">
+        <div class="space-y-2">
+          <div class="font-bold text-lg">Vérification ID</div>
+          <div class="text-muted text-sm">Check manuel avant activation</div>
+        </div>
+        <div class="space-y-2">
+          <div class="font-bold text-lg">Modération active</div>
+          <div class="text-muted text-sm">Équipe dédiée 24/7</div>
+        </div>
+        <div class="space-y-2">
+          <div class="font-bold text-lg">Logs vocaux</div>
+          <div class="text-muted text-sm">Toutes les sessions enregistrées</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="py-32 px-6 border-t border-border">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold mb-20 text-center">Tarifs simples</h2>
+      
+      <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="p-8 bg-surface rounded-lg border border-border hover:border-muted transition">
+          <div class="text-3xl font-bold mb-2">5€</div>
+          <div class="text-muted mb-6">15 minutes</div>
+          <div class="text-sm text-muted">
+            Idéal pour tester<br>
+            ou match rapide
+          </div>
+        </div>
+        
+        <div class="p-8 bg-surface rounded-lg border-gradient">
+          <div class="relative">
+          
+            <div class="text-3xl font-bold mb-2 mt-2">10€</div>
+            <div class="text-muted mb-6">30 minutes</div>
+            <div class="text-sm text-muted">
+              Session standard<br>
+              2-3 games
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-8 bg-surface rounded-lg border border-border hover:border-muted transition">
+          <div class="text-3xl font-bold mb-2">18€</div>
+          <div class="text-muted mb-6">60 minutes</div>
+          <div class="text-sm text-muted">
+            Session longue<br>
+            4-5 games
+          </div>
+        </div>
+      </div>
+      
+      <p class="text-center text-muted mt-12">
+        Paiement sécurisé Stripe • Remboursement 24h en cas de problème
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="start" class="py-32 px-6 border-t border-border">
+    <div class="max-w-4xl mx-auto text-center space-y-8">
+      <h2 class="text-5xl md:text-6xl font-bold">
+        Prête à jouer<br>
+        sans les conneries ?
+      </h2>
+      
+      <p class="text-xl text-muted max-w-2xl mx-auto">
+        Rejoins la bêta privée. Accès Discord instantané. 
+        Profils vérifiés. Sessions dispo maintenant.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+        <a href="https://discord.gg/sheplays" class="px-12 py-5 bg-white text-dark font-bold text-lg rounded hover:bg-white/90 transition hover-lift">
+          Rejoindre sur Discord
+        </a>
+        <span class="text-sm text-muted">Bêta privée • Places limitées</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-12 px-6 border-t border-border">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center gap-2">
+          <img src="https://sheplays.wtf/logo.svg" alt="ShePlays" class="h-10">
+        </div>
+        
+        <div class="flex gap-8 text-sm text-muted">
+          <a href="#" class="hover:text-white transition">Discord</a>
+          <a href="#" class="hover:text-white transition">Twitter</a>
+          <a href="#" class="hover:text-white transition">Conditions</a>
+          <a href="#" class="hover:text-white transition">Confidentialité</a>
+        </div>
+        
+        <div class="text-sm text-muted">
+          © 2025 ShePlays
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
