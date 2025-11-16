@@ -17,17 +17,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
-    const webhook = process.env.DISCORD_WEBHOOK_URL || "https://ptb.discord.com/api/webhooks/1439589129313845308/Dxiho88GAjPdTjYc7IeqvYo4meYDay_YIYltY5uIvm1qSTr3eu8rBOpyO8qO_3LyxN6P";
+    const webhook = process.env.DISCORD_WEBHOOK_URL;
     if (!webhook) {
       return NextResponse.json({ error: "Webhook non configuré" }, { status: 500 });
     }
 
+    const truncate = (s: string, n = 1000) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+
     const embed = {
       title: "Nouveau message de contact",
       fields: [
-        { name: "Nom", value: name, inline: true },
-        { name: "Email", value: email, inline: true },
-        { name: "Message", value: message },
+        { name: "Nom", value: truncate(name, 256), inline: true },
+        { name: "Email", value: truncate(email, 256), inline: true },
+        { name: "Message", value: truncate(message, 1000) },
       ],
       timestamp: new Date().toISOString(),
     } as const;
