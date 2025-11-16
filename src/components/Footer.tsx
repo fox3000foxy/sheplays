@@ -10,10 +10,11 @@ export default function Footer() {
           </div>
 
           <div className="flex gap-8 text-sm text-muted animate-in delay-2">
-            <Link href="#" className="hover:text-white transition">Discord</Link>
-            <Link href="#" className="hover:text-white transition">Twitter</Link>
-            <Link href="#" className="hover:text-white transition">Conditions</Link>
-            <Link href="#" className="hover:text-white transition">Confidentialité</Link>
+            <Link href="https://discord.gg/sheplays" className="hover:text-white transition">Discord</Link>
+            <Link href="/disclaimer-mineurs" className="hover:text-white transition">Disclaimer mineurs</Link>
+            <Link href="/cgv" className="hover:text-white transition">CGV</Link>
+            <Link href="/cgu" className="hover:text-white transition">CGU</Link>
+            <Link href="/mentions-legales" className="hover:text-white transition">Mentions légales</Link>
           </div>
 
           <div className="text-sm text-muted animate-in delay-3">© 2025 ShePlays</div>
