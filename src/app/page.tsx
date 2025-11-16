@@ -53,7 +53,7 @@ export default function Home() {
             <img
               src="/images/hero.png"
               alt="Joueuse ShePlays"
-              style={{height: 700, width: 700, minWidth: 700}}
+              style={{ height: 700, width: 700, minWidth: 700 }}
 
               className="w-full max-w-lg drop-shadow-2xl select-none pointer-events-none"
             />
