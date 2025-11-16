@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <nav className="fixed top-0 w-full z-50 border-b border-border bg-dark/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src="/images/logo.svg" alt="ShePlays" width={80} height={80} className="w-14 h-14 md:w-14 md:h-14" />
+            <img src="/images/logo.svg" alt="ShePlays" style={{ height: "48px" }} />
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-muted">
@@ -252,7 +252,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2">
-              <Image src="/images/logo.svg" alt="ShePlays" width={48} height={48} />
+              <img src="/images/logo.svg" alt="ShePlays" style={{ height: "48px" }} />
             </div>
 
             <div className="flex gap-8 text-sm text-muted">
