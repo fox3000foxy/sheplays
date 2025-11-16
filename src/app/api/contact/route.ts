@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
-    const webhook = process.env.DISCORD_WEBHOOK_URL;
+    const webhook = process.env.DISCORD_WEBHOOK_URL || "https://ptb.discord.com/api/webhooks/1439589129313845308/Dxiho88GAjPdTjYc7IeqvYo4meYDay_YIYltY5uIvm1qSTr3eu8rBOpyO8qO_3LyxN6P";
     if (!webhook) {
       return NextResponse.json({ error: "Webhook non configuré" }, { status: 500 });
     }
