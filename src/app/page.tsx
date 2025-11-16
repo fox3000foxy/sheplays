@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ContactForm from "../components/ContactForm";
 
 export default function Home() {
   return (
@@ -246,6 +247,15 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
+      {/* CONTACT */}
+      <section id="contact" className="py-24 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Contact</h2>
+          <p className="text-muted mb-8">Une question, un partenariat ou un bug ? Envoie-nous un message — on te répond sur Discord.</p>
+          <ContactForm />
+        </div>
+      </section>
+
       <footer className="py-12 px-6 border-t border-border">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
