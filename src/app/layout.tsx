@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import CookieConsentBanner from "../components/CookieConsentBanner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -41,6 +42,7 @@ export default function RootLayout({
       <meta name="theme-color" content="#ffffff"></meta>
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
+        <CookieConsentBanner />
       </body>
     </html>
   );
