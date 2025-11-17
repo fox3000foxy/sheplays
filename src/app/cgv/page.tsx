@@ -111,6 +111,13 @@ export default async function CgvPage() {
                 Les présentes CGV sont soumises au droit français. Tout litige sera soumis aux tribunaux compétents du ressort de Bourg-en-Bresse.
               </p>
             </div>
+
+            <div>
+              <h2 className="text-xl font-bold text-white mb-2">12. ABSENCE DU CLIENT ET FRAIS DE COMPENSATION</h2>
+              <p>
+                En cas d’absence du client au rendez-vous réservé (no-show) et lorsqu’un remboursement est accordé, une retenue forfaitaire de 10% est appliquée sur le montant remboursé. Cette retenue constitue un frais de compensation visant à dédommager le talent pour le temps bloqué et préparé.
+              </p>
+            </div>
           </div>
         </section>
       </main>

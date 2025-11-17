@@ -15,6 +15,7 @@ export default function Footer() {
             <Link href="/cgv" className="hover:text-white transition">CGV</Link>
             <Link href="/cgu" className="hover:text-white transition">CGU</Link>
             <Link href="/mentions-legales" className="hover:text-white transition">Mentions légales</Link>
+            <Link href="/privacy-policy" className="hover:text-white transition">Politique de confidentialité</Link>
           </div>
 
           <div className="text-sm text-muted animate-in delay-3">© 2025 ShePlays</div>

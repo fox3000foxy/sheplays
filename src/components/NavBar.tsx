@@ -18,14 +18,5 @@ export default async function NavBar({ user, currentPath }: { user?: User; curre
     } catch {}
   }
 
-  // Détecter si on est sur la page dashboard
-  const isOnDashboard = currentPath?.startsWith("/dashboard") || false;
-
-  const avatarUrl = user?.avatar
-    ? (user.avatar.startsWith('http')
-        ? user.avatar
-        : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`)
-    : `https://cdn.discordapp.com/embed/avatars/0.png`;
-
   return <NavBarClient user={user} currentPath={currentPath} />;
 }

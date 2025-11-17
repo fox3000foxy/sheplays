@@ -8,11 +8,7 @@ export default function NavBarClient({ user, currentPath }: { user?: User; curre
   const router = useRouter();
   const isOnDashboard = currentPath?.startsWith("/dashboard") || false;
 
-  const avatarUrl = user?.avatar
-    ? (user.avatar.startsWith('http')
-        ? user.avatar
-        : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`)
-    : `https://cdn.discordapp.com/embed/avatars/0.png`;
+  const avatarUrl = user?.id ? `/api/discord/avatar/${user.id}` : `https://cdn.discordapp.com/embed/avatars/0.png`;
 
   const handleLogout = async () => {
     try {
@@ -35,6 +31,7 @@ export default function NavBarClient({ user, currentPath }: { user?: User; curre
 
         <div className="hidden md:flex items-center gap-8 text-sm text-muted">
           <Link href="/how" className="hover:text-white transition">Fonctionnement</Link>
+          <Link href="/playmates" className="hover:text-white transition">Nos Playmates</Link>
           <Link href="/games" className="hover:text-white transition">Jeux</Link>
           <Link href="/pricing" className="hover:text-white transition">Tarifs</Link>
         </div>
