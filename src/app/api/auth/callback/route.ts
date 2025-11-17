@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
+import crypto from "crypto";
 
 function getBaseUrl(req: NextRequest): string {
   // En priorité, utiliser la variable d'environnement
@@ -50,18 +50,45 @@ export async function GET(req: NextRequest) {
     if (!userRes.ok) return NextResponse.redirect(new URL("/", baseUrl));
 
     const user = await userRes.json();
-    const sessionData = { id: user.id, username: user.username, avatar: user.avatar };
-    console.log("[AUTH CALLBACK] Setting session with data:", sessionData);
+    const avatarUrl = user.avatar
+      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
+      : `https://cdn.discordapp.com/embed/avatars/0.png`;
 
-    // Utiliser iron-session pour gérer le cookie
-    const session = await getSession();
-    session.id = sessionData.id;
-    session.username = sessionData.username;
-    session.avatar = sessionData.avatar;
-    await session.save();
+    const header = { alg: "HS256", typ: "JWT" };
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+      sub: String(user.id),
+      username: String(user.username || ""),
+      avatar: avatarUrl,
+      iat: now,
+      exp: now + 60 * 60 * 24 * 365,
+    };
+    const base64url = (obj: any) => Buffer.from(JSON.stringify(obj))
+      .toString("base64")
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+    const data = `${base64url(header)}.${base64url(payload)}`;
+    const secret = process.env.AUTH_JWT_SECRET || "dev-secret-change-me";
+    const signature = crypto
+      .createHmac("sha256", secret)
+      .update(data)
+      .digest("base64")
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+    const jwt = `${data}.${signature}`;
 
-    console.log("[AUTH CALLBACK] Session saved, redirecting to dashboard");
-    return NextResponse.redirect(new URL("/dashboard", baseUrl));
+    const res = NextResponse.redirect(new URL("/dashboard", baseUrl));
+    res.cookies.set("sp_session", jwt, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      domain: process.env.AUTH_COOKIE_DOMAIN || ".sheplays.wtf",
+    });
+    return res;
   } catch (error) {
     const baseUrl = getBaseUrl(req);
     return NextResponse.redirect(new URL("/", baseUrl));

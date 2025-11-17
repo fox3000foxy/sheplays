@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
 
 function getBaseUrl(req: NextRequest): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -15,10 +14,25 @@ function getBaseUrl(req: NextRequest): string {
 
 export async function GET(req: NextRequest) {
   const baseUrl = getBaseUrl(req);
+  const res = NextResponse.redirect(new URL("/", baseUrl));
 
-  // Détruire la session iron-session
-  const session = await getSession();
-  session.destroy();
+  // Supprimer le cookie sp_session
+  res.cookies.delete({
+    name: "sp_session",
+    path: "/",
+    domain: process.env.AUTH_COOKIE_DOMAIN || ".sheplays.wtf",
+  });
 
-  return NextResponse.redirect(new URL("/", baseUrl));
+  // Alternative: set avec maxAge négatif pour être sûr
+  res.cookies.set("sp_session", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: -1,
+    expires: new Date(0),
+    domain: process.env.AUTH_COOKIE_DOMAIN || ".sheplays.wtf",
+  });
+
+  return res;
 }

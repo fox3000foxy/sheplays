@@ -21,3 +21,4 @@ export async function getSession() {
     },
   });
 }
+export const DASHBOARD_API_KEY = process.env.DASHBOARD_API_KEY || "";
