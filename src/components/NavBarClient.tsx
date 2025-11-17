@@ -33,7 +33,6 @@ export default function NavBarClient({ user, currentPath }: { user?: User; curre
           <Link href="/how" className="hover:text-white transition">Fonctionnement</Link>
           <Link href="/playmates" className="hover:text-white transition">Nos Playmates</Link>
           <Link href="/games" className="hover:text-white transition">Jeux</Link>
-          <Link href="/pricing" className="hover:text-white transition">Tarifs</Link>
         </div>
 
         {!user ? (

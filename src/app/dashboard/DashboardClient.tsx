@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import DiscordUsername from "@/components/DiscordUsername";
 
 type SessionUser = { id: string; username: string; avatar?: string | null };
 
@@ -42,7 +43,7 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
   const [isTalent, setIsTalent] = useState<boolean>(false);
   const [creditAmount, setCreditAmount] = useState<number>(5);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"apercu" | "reservations" | "facturation" | "disponibilites" | "profil">("apercu");
+  const [activeTab, setActiveTab] = useState<"apercu" | "reservations" | "facturation" | "disponibilites" | "profil" | "parrainage">("apercu");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [sessionsUpcoming, setSessionsUpcoming] = useState<any[]>([]);
@@ -76,6 +77,15 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
+
+  // Referral system
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [referralLink, setReferralLink] = useState<string>("");
+  const [referralInput, setReferralInput] = useState<string>("");
+  const [referrerInfo, setReferrerInfo] = useState<any>(null);
+  const [myReferrals, setMyReferrals] = useState<any[]>([]);
+  const [hasReferrer, setHasReferrer] = useState<boolean>(false);
+  const [isCheckingCode, setIsCheckingCode] = useState<boolean>(false);
 
   useEffect(() => {
     if (!initialUser) {
@@ -158,6 +168,22 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
           } catch (error) {
             console.error("Error loading games:", error);
           }
+
+          // Vérifier si le talent a déjà un parrain
+          if (prof.talent?.referred_by) {
+            setHasReferrer(true);
+          } else {
+            // Charger le code de parrainage depuis localStorage si disponible
+            const savedCode = localStorage.getItem("referral_code");
+            if (savedCode) {
+              setReferralInput(savedCode);
+              checkReferralCode(savedCode);
+            }
+          }
+        } else {
+          // Si c'est un client (non-talent), charger son code de parrainage
+          loadReferralCode();
+          loadMyReferrals();
         }
       } catch (error) {
         console.error("Error loading dashboard data:", error);
@@ -321,6 +347,95 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
     setSelectedGames(selectedGames.filter((g) => g !== gameName));
   };
 
+  // Referral functions
+  const loadReferralCode = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`/api/referral/get-code/${user.id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setReferralCode(data.referral_code);
+        setReferralLink(data.referral_link);
+      }
+    } catch (error) {
+      console.error("Error loading referral code:", error);
+    }
+  };
+
+  const loadMyReferrals = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`/api/referral/my-referrals/${user.id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setMyReferrals(data.referrals || []);
+      }
+    } catch (error) {
+      console.error("Error loading referrals:", error);
+    }
+  };
+
+  const checkReferralCode = async (code: string) => {
+    if (!code || code.trim() === "") {
+      setReferrerInfo(null);
+      return;
+    }
+
+    setIsCheckingCode(true);
+    try {
+      const res = await fetch(`/api/referral/get-referrer/${code.toUpperCase()}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setReferrerInfo(data);
+      } else {
+        setReferrerInfo(null);
+        showToast("Code de parrainage invalide", "error");
+      }
+    } catch (error) {
+      console.error("Error checking referral code:", error);
+      setReferrerInfo(null);
+    } finally {
+      setIsCheckingCode(false);
+    }
+  };
+
+  const applyReferralCode = async () => {
+    if (!user || !referralInput) return;
+
+    try {
+      const res = await fetch("/api/referral/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          talentDiscordId: user.id,
+          referralCode: referralInput.toUpperCase()
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast("Code de parrainage appliqué avec succès!", "success");
+        setHasReferrer(true);
+        setReferralInput("");
+        setReferrerInfo(null);
+        // Supprimer le code du localStorage après validation
+        localStorage.removeItem("referral_code");
+      } else {
+        showToast(data.message || "Erreur lors de l'application du code", "error");
+      }
+    } catch (error) {
+      console.error("Error applying referral code:", error);
+      showToast("Une erreur est survenue", "error");
+    }
+  };
+
+  const copyReferralLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    showToast("Lien copié dans le presse-papier!", "success");
+  };
+
   const filteredGames = allGames.filter((game) =>
     game.name.toLowerCase().includes(gameSearch.toLowerCase())
   ).slice(0, 50);
@@ -430,6 +545,7 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
                 {!isTalent && (
                   <button onClick={() => setActiveTab("facturation")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "facturation" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Facturation</button>
                 )}
+                <button onClick={() => setActiveTab("parrainage")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "parrainage" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Parrainage</button>
                 {isTalent && (
                   <button onClick={() => setActiveTab("disponibilites")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "disponibilites" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Disponibilités</button>
                 )}
@@ -512,10 +628,7 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
                           <td className="py-2 pr-4">{s.duration} min</td>
                           <td className="py-2 pr-4">
                             {isTalent ? (
-                              <div className="flex items-center gap-2">
-                                <img src={`/api/discord/avatar/${s.client_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
-                                <span>@{String(s.client_id).slice(0, 8)}</span>
-                              </div>
+                              <DiscordUsername userId={s.client_id} avatarSize={24} />
                             ) : (
                               <div className="flex items-center gap-2">
                                 <img src={`/api/discord/avatar/${s.talent_discord_id || s.talent_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
@@ -557,10 +670,7 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
                           <td className="py-2 pr-4">{s.duration} min</td>
                           <td className="py-2 pr-4">
                             {isTalent ? (
-                              <div className="flex items-center gap-2">
-                                <img src={`/api/discord/avatar/${s.client_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
-                                <span>@{String(s.client_id).slice(0, 8)}</span>
-                              </div>
+                              <DiscordUsername userId={s.client_id} avatarSize={24} />
                             ) : (
                               <div className="flex items-center gap-2">
                                 <img src={`/api/discord/avatar/${s.talent_discord_id || s.talent_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
@@ -626,6 +736,21 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
 
           {activeTab === "disponibilites" && isTalent && (
             <div className="space-y-4">
+              {/* Informations sur le système de disponibilités */}
+              <div className="border border-blue-500/30 bg-blue-500/10 rounded p-4">
+                <div className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Information importante
+                </div>
+                <ul className="text-xs text-muted space-y-1">
+                  <li>• Les créneaux qui dépassent minuit sont automatiquement divisés en deux (jour J et jour J+1)</li>
+                  <li>• Toutes les disponibilités sont réinitialisées chaque dimanche à 23h59</li>
+                  <li>• Pensez à définir vos disponibilités chaque semaine</li>
+                </ul>
+              </div>
+
               <div className="border border-border rounded p-4">
                 <div className="text-sm font-medium mb-4">Calendrier hebdomadaire</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -889,6 +1014,175 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
               </div>
             </div>
           )}
+
+          {/* Onglet Parrainage */}
+          {activeTab === "parrainage" && (
+            <div className="space-y-4">
+              {/* Interface pour les clients */}
+              {!isTalent && (
+                <>
+                  {/* Mon code de parrainage */}
+                  <div className="border border-border rounded p-4">
+                    <div className="text-sm font-medium mb-4">Mon code de parrainage</div>
+
+                    {referralCode ? (
+                      <div className="space-y-4">
+                        <div className="bg-surface border border-border rounded p-4">
+                          <div className="text-xs text-muted mb-2">Votre code unique</div>
+                          <div className="text-2xl font-mono font-bold text-white mb-4">{referralCode}</div>
+
+                          <div className="space-y-2">
+                            <div className="text-xs text-muted mb-1">Lien de parrainage</div>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={referralLink}
+                                readOnly
+                                className="flex-1 px-3 py-2 bg-dark border border-border rounded text-xs font-mono"
+                              />
+                              <button
+                                onClick={copyReferralLink}
+                                className="px-4 py-2 bg-white text-dark rounded text-xs font-medium hover:bg-white/90 transition"
+                              >
+                                Copier
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-muted">
+                          💡 Partagez ce lien ou ce code avec les talents pour les parrainer. Ils pourront l'utiliser lors de leur inscription.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-muted text-sm">Chargement de votre code...</div>
+                    )}
+                  </div>
+
+                  {/* Talents parrainés */}
+                  <div className="border border-border rounded p-4">
+                    <div className="text-sm font-medium mb-4">Mes talents parrainés ({myReferrals.length})</div>
+
+                    {myReferrals.length === 0 ? (
+                      <div className="text-center py-8 text-muted text-sm">
+                        <div className="mb-2">🎮</div>
+                        <div>Vous n'avez pas encore parrainé de talent</div>
+                        <div className="text-xs mt-2">Partagez votre code pour commencer!</div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {myReferrals.map((ref) => (
+                          <div key={ref.talent_discord_id} className="border border-border rounded p-3 flex items-center gap-3">
+                            <div className="flex-shrink-0">
+                              <img
+                                src={`/api/discord/avatar/${ref.talent_discord_id}`}
+                                alt={ref.display_name}
+                                className="w-12 h-12 rounded-full"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                                }}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{ref.display_name}</div>
+                              <div className="text-xs text-muted">{ref.username}</div>
+                              {ref.total_sessions > 0 && (
+                                <div className="text-xs text-muted mt-1">
+                                  {ref.total_sessions} session{ref.total_sessions > 1 ? 's' : ''} •{' '}
+                                  {ref.rating > 0 ? `⭐ ${ref.rating.toFixed(1)}` : 'Pas encore noté'}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted">
+                              Parrainé le {new Date(ref.created_at).toLocaleDateString('fr-FR')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Interface pour les talents */}
+              {isTalent && (
+                <div className="border border-border rounded p-4">
+                  <div className="text-sm font-medium mb-4">Code de parrainage</div>
+
+                  {hasReferrer ? (
+                    <div className="bg-green-500/10 border border-green-500/30 rounded p-4 text-center">
+                      <div className="text-green-500 mb-2">✓</div>
+                      <div className="text-sm">Vous avez déjà utilisé un code de parrainage!</div>
+                      <div className="text-xs text-muted mt-2">Merci d'avoir rejoint ShePlays</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="text-sm text-muted">
+                        Entrez le code de parrainage qu'un client vous a donné pour valider votre parrainage.
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-muted mb-2">Code de parrainage</label>
+                          <input
+                            type="text"
+                            value={referralInput}
+                            onChange={(e) => {
+                              const code = e.target.value.toUpperCase();
+                              setReferralInput(code);
+                              if (code.length >= 6) {
+                                checkReferralCode(code);
+                              } else {
+                                setReferrerInfo(null);
+                              }
+                            }}
+                            placeholder="Entrez le code (ex: ABC12XYZ)"
+                            className="w-full px-3 py-2 bg-dark border border-border rounded font-mono uppercase"
+                            maxLength={16}
+                          />
+                        </div>
+
+                        {isCheckingCode && (
+                          <div className="text-xs text-muted">Vérification du code...</div>
+                        )}
+
+                        {referrerInfo && (
+                          <div className="bg-surface border border-border rounded p-4">
+                            <div className="text-xs text-green-500 mb-3">✓ Code valide!</div>
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0">
+                                <img
+                                  src={`/api/discord/avatar/${referrerInfo.referrer_user_id}`}
+                                  alt="Parrain"
+                                  className="w-12 h-12 rounded-full"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium">Parrain trouvé</div>
+                                <div className="text-xs text-muted">ID: {referrerInfo.referrer_user_id.substring(0, 8)}...</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={applyReferralCode}
+                          disabled={!referrerInfo || !referralInput}
+                          className="w-full px-4 py-2 bg-white text-dark rounded font-medium hover:bg-white/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Valider le parrainage
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           </div>
         </>
       )}
