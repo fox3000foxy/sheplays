@@ -1,10 +1,19 @@
 import Footer from "../../components/Footer";
 import NavBar from "../../components/NavBar";
+import { cookies } from "next/headers";
 
-export default function HowPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HowPage() {
+  let user: { id: string; username: string; avatar?: string | null } | undefined;
+  try {
+    const store = await cookies();
+    const cookie = store.get("sp_session")?.value;
+    if (cookie) user = JSON.parse(cookie);
+  } catch {}
   return (
     <div className="bg-dark text-white font-sans">
-      <NavBar />
+      <NavBar user={user} />
 
       <main className="pt-20 px-6">
         <section className="py-32 max-w-6xl mx-auto">

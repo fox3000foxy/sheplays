@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import CookieConsentBanner from "../components/CookieConsentBanner";
+import { cookies } from "next/headers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,11 +16,17 @@ export const metadata: Metadata = {
     "ShePlays connecte des joueuses vérifiées pour des sessions courtes et qualitatives. Pas de drague. Pas de toxicité. Juste du gaming.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let hideConsent = false;
+  try {
+    const store = await cookies();
+    const session = store.get("sp_session")?.value;
+    if (session) hideConsent = true;
+  } catch {}
   return (
     <html lang="fr">
 
@@ -42,7 +49,7 @@ export default function RootLayout({
       <meta name="theme-color" content="#ffffff"></meta>
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
-        <CookieConsentBanner />
+        {!hideConsent && <CookieConsentBanner />}
       </body>
     </html>
   );
