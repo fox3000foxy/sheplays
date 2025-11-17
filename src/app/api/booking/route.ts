@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     const [availability] = await pool.query<any[]>(
       `SELECT slots FROM availability WHERE talent_id = ? AND weekday = ?`,
-      [talentId, weekday]
+      [talent.id, weekday]
     );
 
     if (!Array.isArray(availability) || availability.length === 0) {
@@ -95,7 +95,17 @@ export async function POST(req: NextRequest) {
     const slots = JSON.parse(availability[0].slots);
     const isInAvailableSlot = slots.some((slot: string) => {
       const [start, end] = slot.split("-");
-      return scheduledTime >= start && scheduledTime <= end;
+      if (!start || !end) return false;
+      // Build absolute slot bounds for the scheduled day
+      const slotStart = new Date(scheduledDate);
+      const [sh, sm] = start.split(":").map(Number);
+      slotStart.setHours(sh, sm, 0, 0);
+      const slotEnd = new Date(scheduledDate);
+      const [eh, em] = end.split(":").map(Number);
+      slotEnd.setHours(eh, em, 0, 0);
+      const slotStartMs = slotStart.getTime();
+      const slotEndMs = slotEnd.getTime();
+      return scheduledStart >= slotStartMs && scheduledEnd <= slotEndMs;
     });
 
     if (!isInAvailableSlot) {

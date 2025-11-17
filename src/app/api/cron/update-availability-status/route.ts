@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     // Check each talent's availability
     for (const talent of talents) {
-      const talentId = talent.id; // Use numeric ID for availability table
+      const talentId = talent.id; // numeric ID for availability table
       const discordId = talent.discord_id;
 
       // Get availability slots for this talent

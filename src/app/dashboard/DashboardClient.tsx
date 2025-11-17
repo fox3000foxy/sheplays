@@ -42,9 +42,12 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
   const [isTalent, setIsTalent] = useState<boolean>(false);
   const [creditAmount, setCreditAmount] = useState<number>(5);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"apercu" | "disponibilites" | "profil">("apercu");
+  const [activeTab, setActiveTab] = useState<"apercu" | "reservations" | "facturation" | "disponibilites" | "profil">("apercu");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [sessionsUpcoming, setSessionsUpcoming] = useState<any[]>([]);
+  const [sessionsHistory, setSessionsHistory] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   // Profile fields
   const [displayName, setDisplayName] = useState<string>("");
@@ -98,6 +101,15 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
         const bRes = await fetch(`/api/db/balance/${u.id}`);
         const b = await bRes.json();
         setBalance(b.balance || 0);
+
+        const sRes = await fetch(`/api/db/client/sessions/${u.id}`);
+        const s = await sRes.json();
+        setSessionsUpcoming(s.upcoming || []);
+        setSessionsHistory(s.history || []);
+
+        const tRes = await fetch(`/api/db/client/transactions/${u.id}`);
+        const t = await tRes.json();
+        setTransactions(t.transactions || []);
 
         // Charger les disponibilités uniquement si c'est un talent
         if (talentCheck.isTalent) {
@@ -414,6 +426,10 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
             <div className="max-w-5xl mx-auto px-6">
               <div className="flex w-full">
                 <button onClick={() => setActiveTab("apercu")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "apercu" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Aperçu</button>
+                <button onClick={() => setActiveTab("reservations")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "reservations" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Réservations</button>
+                {!isTalent && (
+                  <button onClick={() => setActiveTab("facturation")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "facturation" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Facturation</button>
+                )}
                 {isTalent && (
                   <button onClick={() => setActiveTab("disponibilites")} className={`flex-1 px-3 py-2 text-sm transition ${activeTab === "disponibilites" ? "border-b-2 border-white" : "text-muted hover:text-white"}`}>Disponibilités</button>
                 )}
@@ -470,6 +486,141 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === "reservations" && (
+            <div className="space-y-6">
+              <div className="border border-border rounded p-4">
+                <div className="text-sm font-medium mb-3">Sessions à venir</div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-muted">
+                        <th className="py-2 pr-4">Date</th>
+                        <th className="py-2 pr-4">Heure</th>
+                        <th className="py-2 pr-4">Durée</th>
+                        <th className="py-2 pr-4">{isTalent ? "Client" : "Talent"}</th>
+                        <th className="py-2 pr-4">Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sessionsUpcoming.map((s) => (
+                        <tr key={s.id} className="border-t border-border">
+                          <td className="py-2 pr-4">{new Date(s.scheduled_start).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td>
+                          <td className="py-2 pr-4">{new Date(s.scheduled_start).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</td>
+                          <td className="py-2 pr-4">{s.duration} min</td>
+                          <td className="py-2 pr-4">
+                            {isTalent ? (
+                              <div className="flex items-center gap-2">
+                                <img src={`/api/discord/avatar/${s.client_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
+                                <span>@{String(s.client_id).slice(0, 8)}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <img src={`/api/discord/avatar/${s.talent_discord_id || s.talent_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
+                                <span>{s.talent_name || s.talent_id}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-2 pr-4">{s.status}</td>
+                        </tr>
+                      ))}
+                      {sessionsUpcoming.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="py-4 text-center text-muted">Aucune session à venir</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="border border-border rounded p-4">
+                <div className="text-sm font-medium mb-3">Historique des réservations</div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-muted">
+                        <th className="py-2 pr-4">Date</th>
+                        <th className="py-2 pr-4">Heure</th>
+                        <th className="py-2 pr-4">Durée</th>
+                        <th className="py-2 pr-4">{isTalent ? "Client" : "Talent"}</th>
+                        <th className="py-2 pr-4">Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sessionsHistory.map((s) => (
+                        <tr key={s.id} className="border-t border-border">
+                          <td className="py-2 pr-4">{new Date(s.scheduled_start).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td>
+                          <td className="py-2 pr-4">{new Date(s.scheduled_start).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</td>
+                          <td className="py-2 pr-4">{s.duration} min</td>
+                          <td className="py-2 pr-4">
+                            {isTalent ? (
+                              <div className="flex items-center gap-2">
+                                <img src={`/api/discord/avatar/${s.client_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
+                                <span>@{String(s.client_id).slice(0, 8)}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <img src={`/api/discord/avatar/${s.talent_discord_id || s.talent_id}`} alt="avatar" className="h-6 w-6 rounded-full border border-border" />
+                                <span>{s.talent_name || s.talent_id}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-2 pr-4">{s.status}</td>
+                        </tr>
+                      ))}
+                      {sessionsHistory.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="py-4 text-center text-muted">Aucune session passée</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "facturation" && (
+            <div className="space-y-6">
+              <div className="border border-border rounded p-4">
+                <div className="text-sm font-medium mb-3">Historique de facturation</div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-muted">
+                        <th className="py-2 pr-4">Date</th>
+                        <th className="py-2 pr-4">Type</th>
+                        <th className="py-2 pr-4">Montant</th>
+                        <th className="py-2 pr-4">Solde avant</th>
+                        <th className="py-2 pr-4">Solde après</th>
+                        <th className="py-2 pr-4">Description</th>
+                        <th className="py-2 pr-4">Session</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((t) => (
+                        <tr key={t.id} className="border-t border-border">
+                          <td className="py-2 pr-4">{new Date(t.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}</td>
+                          <td className="py-2 pr-4">{t.type}</td>
+                          <td className="py-2 pr-4">{(t.amount / 100).toFixed(2)}€</td>
+                          <td className="py-2 pr-4">{(t.balance_before / 100).toFixed(2)}€</td>
+                          <td className="py-2 pr-4">{(t.balance_after / 100).toFixed(2)}€</td>
+                          <td className="py-2 pr-4">{t.description}</td>
+                          <td className="py-2 pr-4">{t.session_id || "—"}</td>
+                        </tr>
+                      ))}
+                      {transactions.length === 0 && (
+                        <tr>
+                          <td colSpan={7} className="py-4 text-center text-muted">Aucune transaction</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
 
