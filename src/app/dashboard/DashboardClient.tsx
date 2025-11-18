@@ -87,6 +87,14 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
   const [hasReferrer, setHasReferrer] = useState<boolean>(false);
   const [isCheckingCode, setIsCheckingCode] = useState<boolean>(false);
 
+  // Review system
+  const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+  const [reviewSession, setReviewSession] = useState<any>(null);
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [reviewComment, setReviewComment] = useState<string>("");
+  const [reviewTags, setReviewTags] = useState<string[]>([]);
+  const [sessionReviews, setSessionReviews] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (!initialUser) {
       router.push("/api/auth/login");
@@ -120,6 +128,15 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
         const tRes = await fetch(`/api/db/client/transactions/${u.id}`);
         const t = await tRes.json();
         setTransactions(t.transactions || []);
+
+        // Charger les sessions déjà évaluées si c'est un client
+        if (!talentCheck.isTalent) {
+          const reviewedRes = await fetch(`/api/db/client/reviewed-sessions/${u.id}`);
+          const reviewed = await reviewedRes.json();
+          if (reviewed.reviewedSessionIds) {
+            setSessionReviews(new Set(reviewed.reviewedSessionIds));
+          }
+        }
 
         // Charger les disponibilités uniquement si c'est un talent
         if (talentCheck.isTalent) {
@@ -506,6 +523,67 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
     return (credits / 100).toFixed(2);
   };
 
+  const openReviewModal = (session: any) => {
+    setReviewSession(session);
+    setReviewRating(5);
+    setReviewComment("");
+    setReviewTags([]);
+    setShowReviewModal(true);
+  };
+
+  const submitReview = async () => {
+    if (!reviewSession || !user) return;
+
+    try {
+      const res = await fetch(`/api/playmates/${reviewSession.talent_id}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: user.id,
+          sessionId: reviewSession.id,
+          rating: reviewRating,
+          comment: reviewComment,
+          tags: reviewTags,
+        }),
+      });
+
+      if (res.ok) {
+        setToast({ message: "Avis déposé avec succès !", type: "success" });
+        setShowReviewModal(false);
+        // Ajouter la session aux avis déposés
+        const newReviews = new Set(sessionReviews);
+        newReviews.add(reviewSession.id);
+        setSessionReviews(newReviews);
+      } else {
+        const data = await res.json();
+        setToast({ message: data.error || "Erreur lors du dépôt de l'avis", type: "error" });
+      }
+    } catch (error) {
+      setToast({ message: "Erreur lors du dépôt de l'avis", type: "error" });
+    }
+
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const toggleReviewTag = (tag: string) => {
+    if (reviewTags.includes(tag)) {
+      setReviewTags(reviewTags.filter((t) => t !== tag));
+    } else {
+      setReviewTags([...reviewTags, tag]);
+    }
+  };
+
+  const availableReviewTags = [
+    "Sympathique",
+    "Bonne communication",
+    "Drôle",
+    "Compétent",
+    "À l'heure",
+    "Patient",
+    "Motivant",
+    "Créatif",
+  ];
+
   return (
     <div className="flex-1">
       <div className="max-w-5xl mx-auto px-6 py-10 pt-24">
@@ -660,6 +738,7 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
                         <th className="py-2 pr-4">Durée</th>
                         <th className="py-2 pr-4">{isTalent ? "Client" : "Talent"}</th>
                         <th className="py-2 pr-4">Statut</th>
+                        {!isTalent && <th className="py-2 pr-4">Actions</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -679,11 +758,25 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
                             )}
                           </td>
                           <td className="py-2 pr-4">{s.status}</td>
+                          {!isTalent && (
+                            <td className="py-2 pr-4">
+                              {s.status === "completed" && !sessionReviews.has(s.id) ? (
+                                <button
+                                  onClick={() => openReviewModal(s)}
+                                  className="px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 rounded text-xs hover:bg-yellow-500/30 transition"
+                                >
+                                  Laisser un avis
+                                </button>
+                              ) : s.status === "completed" && sessionReviews.has(s.id) ? (
+                                <span className="text-xs text-green-400">✓ Avis déposé</span>
+                              ) : null}
+                            </td>
+                          )}
                         </tr>
                       ))}
                       {sessionsHistory.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="py-4 text-center text-muted">Aucune session passée</td>
+                          <td colSpan={!isTalent ? 6 : 5} className="py-4 text-center text-muted">Aucune session passée</td>
                         </tr>
                       )}
                     </tbody>
@@ -1185,6 +1278,93 @@ export default function DashboardClient({ user: initialUser }: DashboardClientPr
 
           </div>
         </>
+      )}
+
+      {/* Review Modal */}
+      {showReviewModal && reviewSession && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowReviewModal(false)}>
+          <div className="bg-dark border border-border rounded-lg max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Laisser un avis</h2>
+              <button onClick={() => setShowReviewModal(false)} className="text-2xl hover:text-muted">&times;</button>
+            </div>
+
+            {/* Session Info */}
+            <div className="bg-surface border border-border rounded p-3 mb-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src={`/api/discord/avatar/${reviewSession.talent_discord_id || reviewSession.talent_id}`}
+                  alt="talent"
+                  className="h-10 w-10 rounded-full border border-border"
+                />
+                <div>
+                  <div className="text-sm font-medium">{reviewSession.talent_name || reviewSession.talent_id}</div>
+                  <div className="text-xs text-muted">
+                    {new Date(reviewSession.scheduled_start).toLocaleDateString("fr-FR")} • {reviewSession.duration} min
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rating */}
+            <div className="mb-4">
+              <label className="block text-sm text-muted mb-2">Note</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setReviewRating(star)}
+                    className={`text-3xl transition ${star <= reviewRating ? "text-yellow-400" : "text-gray-600 hover:text-yellow-400"}`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="mb-4">
+              <label className="block text-sm text-muted mb-2">Tags (optionnel)</label>
+              <div className="flex flex-wrap gap-2">
+                {availableReviewTags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => toggleReviewTag(tag)}
+                    className={`px-3 py-1 rounded text-xs transition ${
+                      reviewTags.includes(tag)
+                        ? "bg-white text-dark"
+                        : "bg-surface border border-border hover:border-white/40"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div className="mb-6">
+              <label className="block text-sm text-muted mb-2">Commentaire (optionnel)</label>
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Partagez votre expérience..."
+                className="w-full px-3 py-2 bg-dark border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-white/20 resize-none"
+                rows={4}
+                maxLength={500}
+              />
+              <div className="text-xs text-muted mt-1 text-right">{reviewComment.length}/500</div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={submitReview}
+              className="w-full px-4 py-2 bg-white text-dark rounded font-medium hover:bg-white/90 transition"
+            >
+              Publier l'avis
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
