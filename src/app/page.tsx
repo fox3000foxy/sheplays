@@ -37,7 +37,7 @@ export default async function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 animate-in delay-2">
-              <Link href="/games" className="px-6 md:px-8 py-3 md:py-4 bg-white text-dark font-semibold rounded hover:bg-white/90 transition hover-lift text-center">
+              <Link href="/playmates" className="px-6 md:px-8 py-3 md:py-4 bg-white text-dark font-semibold rounded hover:bg-white/90 transition hover-lift text-center">
                 Découvrir les joueuses
               </Link>
 
