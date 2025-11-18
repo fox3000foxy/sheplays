@@ -39,36 +39,55 @@ export async function POST(req: NextRequest) {
     const credits = amount * 100;
 
     // Créer la session Stripe
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: `${credits} crédits ShePlays`,
-              description: `Ajout de ${credits} crédits à votre compte ShePlays`,
-              images: ["https://sheplays.wtf/images/logo.svg"],
-            },
-            unit_amount: amountInCents,
+  const session = await stripe.checkout.sessions.create({
+    // Stripe choisit automatiquement les bons moyens de paiement selon la localisation et le type de transaction
+    payment_method_types: ["card", "paypal", "klarna"], // tu peux mettre [] ou supprimer cette ligne pour laisser Stripe gérer
+
+    customer_creation: "if_required",
+    billing_address_collection: "auto",
+    automatic_tax: { enabled: true },
+
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: `${credits} crédits ShePlays`,
+            description: `Ajout de ${credits} crédits à votre compte ShePlays`,
+            images: ["https://sheplays.wtf/images/logo.svg"],
           },
+          unit_amount: amountInCents,
         },
-      ],
-      mode: "payment",
+      },
+    ],
+
+    mode: "payment",
+
+    // ⚠ Toujours stocker les metadata dans le PaymentIntent (plus fiable en webhook)
+    payment_intent_data: {
       metadata: {
         credits: credits.toString(),
         user_id: userId,
         discord_id: userId,
-        username: username,
+        username,
         amount_eur: amount.toString(),
       },
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=cancelled`,
-      automatic_tax: { enabled: true },
-      billing_address_collection: "auto",
-      customer_creation: "if_required",
-    });
+    },
+
+    metadata: {
+      // facultatif, mais conservé si tu veux lire la Session dans ta DB
+      credits: credits.toString(),
+      user_id: userId,
+      discord_id: userId,
+      username,
+      amount_eur: amount.toString(),
+    },
+
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=cancelled`,
+  });
+
 
     if (!session.url) {
       return NextResponse.json(
