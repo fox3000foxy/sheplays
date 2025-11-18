@@ -481,7 +481,7 @@ export default function PlaymatesClient() {
         {/* Playmates Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {playmates
-            .filter((playmate) => !showFavorites || favorites.has(playmate.discord_id))
+            .filter((playmate) => (!showFavorites || favorites.has(playmate.discord_id)) && !!playmate.age )
             .map((playmate) => {
               const isFavorite = favorites.has(playmate.discord_id);
               return (
